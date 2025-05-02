@@ -5,11 +5,21 @@ import { AiFillPlusCircle } from "react-icons/ai";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./config/firebase";
 import ContactCard from "./components/ContactCard";
+import AddAndUpdateContact from "./components/AddAndUpdateContact";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [contacts, setContacts] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onOpen = () => {
+    setIsOpen(true);
+  };
+
+  const onClose = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     const getContacts = async () => {
@@ -42,7 +52,10 @@ function App() {
             />
           </div>
           <div className="">
-            <AiFillPlusCircle className="text-5xl text-white cursor-pointer"/>
+            <AiFillPlusCircle 
+              className="text-5xl text-white cursor-pointer"
+              onClick={onOpen}
+            />
           </div>
         </div>
         <div className="mt-4 flex flex-col gap-3">
@@ -55,6 +68,7 @@ function App() {
           )}
         </div>
       </div>
+      <AddAndUpdateContact isOpen={isOpen} onClose={onClose} />
       <ToastContainer position="bottom-right" />
     </>
   );
