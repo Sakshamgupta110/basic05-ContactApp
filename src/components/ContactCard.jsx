@@ -21,6 +21,7 @@ const ContactCard = ({ contact }) => {
 
   return (
     <>
+    {/* Contact Card */}
       <div
         key={contact.id}
         className="flex items-center justify-between rounded-lg bg-white p-2"
