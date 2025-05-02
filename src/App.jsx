@@ -21,21 +21,21 @@ function App() {
     setIsOpen(false);
   };
 
-  useEffect(() => {
-    const getContacts = async () => {
-      try {
-        const contactsRef = collection(db, "contacts");
-        const contactSnapShot = await getDocs(contactsRef);
-        const contactList = contactSnapShot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setContacts(contactList);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const getContacts = async () => {
+    try {
+      const contactsRef = collection(db, "contacts");
+      const contactSnapShot = await getDocs(contactsRef);
+      const contactList = contactSnapShot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setContacts(contactList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
     getContacts();
   }, []);
   
@@ -68,7 +68,11 @@ function App() {
           )}
         </div>
       </div>
-      <AddAndUpdateContact isOpen={isOpen} onClose={onClose} />
+      <AddAndUpdateContact 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        getContacts={getContacts}
+      />
       <ToastContainer position="bottom-right" />
     </>
   );

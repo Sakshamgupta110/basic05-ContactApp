@@ -1,13 +1,27 @@
-import { addDoc, doc, updateDoc } from "firebase/firestore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { addDoc, doc, updateDoc, collection } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { toast } from "react-toastify";
 
 const AddAndUpdateContact = ({ isOpen, onClose, contact, isUpdate }) => {
   const [contactData, setContactData] = useState({
-    name: contact?.name || "",
-    email: contact?.email || "",
+    name: "",
+    email: "",
   });
+
+  useEffect(() => {
+    if (isUpdate && contact) {
+      setContactData({
+        name: contact.name || "",
+        email: contact.email || "",
+      });
+    } else {
+      setContactData({
+        name: "",
+        email: "",
+      });
+    }
+  }, [isUpdate, contact]);
 
   const handleChange = (e) => {
     setContactData({ ...contactData, [e.target.name]: e.target.value });
@@ -26,6 +40,7 @@ const AddAndUpdateContact = ({ isOpen, onClose, contact, isUpdate }) => {
       onClose();
     } catch (error) {
       console.log(error);
+      toast.error("Error: " + error.message);
     }
   };
 
