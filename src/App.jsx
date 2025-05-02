@@ -2,43 +2,50 @@ import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import { FiSearch } from "react-icons/fi";
 import { AiFillPlusCircle } from "react-icons/ai";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "./config/firebase";
 import ContactCard from "./components/ContactCard";
 import AddAndUpdateContact from "./components/AddAndUpdateContact";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useDisclouse from "./hooks/useDisclouse";
 
 function App() {
   const [contacts, setContacts] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const onOpen = () => {
-    setIsOpen(true);
-  };
-
-  const onClose = () => {
-    setIsOpen(false);
-  };
-
-  const getContacts = async () => {
-    try {
-      const contactsRef = collection(db, "contacts");
-      const contactSnapShot = await getDocs(contactsRef);
-      const contactList = contactSnapShot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setContacts(contactList);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { isOpen, onClose, onOpen } = useDisclouse();
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    const getContacts = async () => {
+      try {
+        const contactsRef = collection(db, "contacts");
+        onSnapshot(contactsRef, (snapshot) => {
+          const contactLists = snapshot.docs.map((doc) => {
+            return {
+              id: doc.id,
+              ...doc.data(),
+            };
+          });
+          setContacts(contactLists);
+          return contactLists;
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     getContacts();
   }, []);
-  
+
+  const filteredContacts = contacts.filter((contact) => {
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      contact.name?.toLowerCase().includes(searchTermLower) ||
+      contact.email?.toLowerCase().includes(searchTermLower) ||
+      contact.phone?.toLowerCase().includes(searchTermLower)
+    );
+  });
+
   return (
     <>
       <div className="mx-auto max-w-[370px] px-4">
@@ -48,7 +55,10 @@ function App() {
             <FiSearch className="absolute ml-1 text-3xl text-white" />
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="h-10 flex-grow rounded-md border border-white bg-transparent pl-9 text-white"
+              placeholder="Search contacts..."
             />
           </div>
           <div className="">
@@ -59,10 +69,10 @@ function App() {
           </div>
         </div>
         <div className="mt-4 flex flex-col gap-3">
-          {contacts.length <= 0 ? (
-            <h3 className="text-center text-2xl text-white">contact not found</h3>
+          {filteredContacts.length <= 0 ? (
+            <h3 className="text-center text-2xl text-white">No contacts found</h3>
           ) : (
-            contacts.map((contact) => (
+            filteredContacts.map((contact) => (
               <ContactCard key={contact.id} contact={contact} />
             ))
           )}
@@ -71,7 +81,6 @@ function App() {
       <AddAndUpdateContact 
         isOpen={isOpen} 
         onClose={onClose} 
-        getContacts={getContacts}
       />
       <ToastContainer position="bottom-right" />
     </>
